@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(git rev-parse --show-toplevel)/utils.v1.bash"
+source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
 set_strict_mode
 
@@ -50,6 +50,6 @@ case "$TARGET_PLATFORM" in
                build_linux
     ;;
   *)
-    die "binutils doesnot support building for '${TARGET_PLATFORM}'"
+    die "binutils does not support building for '${TARGET_PLATFORM}'"
     ;;
 esac

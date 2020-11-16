@@ -46,7 +46,7 @@ function get_existing_absolute_path {
   # within it.
   local -r abs_path="$(pwd)/${path_arg}"
 
-  if [[ ! -e "$abs_path" ]]; then
+  if ! [[ -f "$abs_path" || -d "$abs_path" ]]; then
     die "File at path '${path_arg}' (relative to pwd '$(pwd)') was expected to exist, but does not."
   fi
 
@@ -134,3 +134,7 @@ function with_pushd {
   "${cmd_line[@]}"
   popd >&2
 }
+
+# function declare_dependency {
+#   local -r
+# }
