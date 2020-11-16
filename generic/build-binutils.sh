@@ -4,7 +4,7 @@
 
 readonly BINUTILS_VERSION="${1:-2.30}"
 
-exec ./build-configure.sh \
+exec ./build-configure-helper.sh \
      binutils \
      "$BINUTILS_VERSION" \
      'ftpmirror.gnu.org/binutils'

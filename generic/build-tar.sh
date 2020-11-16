@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-BASH_VERSION="${1:-5.0}"
+readonly TAR_VERSION="${1:-1.32}"
 
 exec ./build-configure-helper.sh \
-     bash \
-     "$BASH_VERSION" \
-     'ftpmirror.gnu.org/bash'
+ tar \
+ "$TAR_VERSION" \
+ 'ftpmirror.gnu.org/tar'

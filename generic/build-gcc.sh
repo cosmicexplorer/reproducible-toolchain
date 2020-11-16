@@ -4,67 +4,39 @@ source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
 set_strict_mode
 
-function fetch_extract_gcc_source_release {
-  local -r extracted_dirname="gcc-${GCC_VERSION}"
-  local -r archive_filename="${extracted_dirname}.tar.gz"
-  local -r release_url="https://ftpmirror.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/${archive_filename}"
-
-  local -r downloaded_archive="$(curl_file_with_fail "$release_url" "$archive_filename")"
-  extract_for "$downloaded_archive" "$extracted_dirname"
-}
-
-function build_gcc_with_configure {
-  local -a configure_cmd_line=("$@")
-
-  "${configure_cmd_line[@]}"
-
-  make "-j${MAKE_JOBS}"
-
-  make install
-}
+source ./lib-configure.sh
 
 function build_gcc_out_of_tree {
-  local -a configure_args=("$@")
+  local -r name="$1"
+  local -r version="$2"
+  local -r release_urls_base="$3"
+  local -ra configure_args=( "${@:4}" )
 
-  local -r source_extracted_abs="$(fetch_extract_gcc_source_release)"
+  local -r source_dir="$(fetch_extract_source_release "$name" "$version" "$release_urls_base")"
 
+  check_cmd_or_err 'wget'
   # This script is a great tool, it saves a ton of time downloading and
   # configuring gmp, mpc, isl, and mpfr per-platform.
-  check_cmd_or_err 'wget'
   # Redirect to stderr because we "return" a path to our .tar.gz by stdout.
-  with_pushd >&2 "$source_extracted_abs" \
+  with_pushd >&2 "$source_dir" \
                  ./contrib/download_prerequisites
 
-  local -r build_dir_abs="$(mkdirp_absolute_path 'gcc-build')"
-  local -r install_dir_abs="$(mkdirp_absolute_path 'gcc-install')"
+  local -r build_dir="$(mkdirp_absolute_path 'gcc-build')"
+  local -r install_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "${name}-install")"
 
-  with_pushd >&2 "$build_dir_abs" \
-             build_gcc_with_configure  \
-             "${source_extracted_abs}/configure" \
-             --prefix="$install_dir_abs" \
-             "${configure_args[@]}"
+  CONFIGURE_PATH="${source_dir}/configure" \
+                with_pushd >&2 "$build_dir" \
+                               build_with_configure --prefix "$install_dir" \
+                               "${configure_args[@]}"
 
-  with_pushd "$install_dir_abs" \
-             create_gz_package 'gcc'
+  # NB: The below two lines are debugging info.
+  echo >&2 "$source_dir" "$build_dir" "$install_dir"
+  ls -lAvF >&2 "$source_dir" "$build_dir" "$install_dir"
+  # TODO: checking if this is an empty array is Very Hard.
+  # if [[ "${#configure_args[@]}" -eq 0 || "${configure_args[1]:-}" == '' ]]; then
+  with_pushd "$install_dir" \
+             create_gz_package "$name"
 }
-
-function build_osx {
-  local -r release_numeric="$1"
-  local -r target_desc="x86_64-apple-darwin${release_numeric}"
-  build_gcc_out_of_tree \
-    --host="$target_desc" \
-    --target="$target_desc" \
-    "${CONFIGURE_BASE_ARGS[@]}"
-}
-
-function build_linux {
-  build_gcc_out_of_tree \
-    "${CONFIGURE_BASE_ARGS[@]}"
-}
-
-## Interpret arguments and execute build.
-
-readonly TARGET_PLATFORM="$1" GCC_VERSION="$2"
 
 readonly SUPPORTED_LANGS='c,c++'
 
@@ -72,12 +44,39 @@ readonly -a CONFIGURE_BASE_ARGS=(
   --disable-multilib
   --without-gstabs
   --enable-languages="${SUPPORTED_LANGS}"
-  --with-pkgversion="pants-packaged"
-  --with-bugurl='https://github.com/pantsbuild/pants/issues'
+  --with-pkgversion="bootstrap-packaged"
+  --with-bugurl='https://github.com/cosmicexplorer/bootstrap/issues'
 )
 
+function build_osx {
+  local -r version="$1"
+  local -r osx_release_numeric="$2"
+  local -r target_desc="x86_64-apple-darwin${osx_release_numeric}"
+  build_gcc_out_of_tree \
+    gcc \
+    "$version" \
+    "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
+    --host="$target_desc" \
+    --target="$target_desc" \
+    "${CONFIGURE_BASE_ARGS[@]}"
+}
+
+function build_linux {
+  local -r version="$1"
+  # Note: gcc seems to be the only gnu project with this sharded download URL format.
+  build_gcc_out_of_tree \
+    gcc \
+    "$version" \
+    "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
+    "${CONFIGURE_BASE_ARGS[@]}"
+}
+
+## Interpret arguments and execute build.
+
+readonly GCC_VERSION="${1:-10.2.0}" TARGET_PLATFORM="${2:-$(uname)}"
+
 case "$TARGET_PLATFORM" in
-  osx)
+  Darwin)
     if [[ "$(uname)" != 'Darwin' ]]; then
       die "This script only supports building gcc for OSX within an OSX environment."
     fi
@@ -96,13 +95,12 @@ case "$TARGET_PLATFORM" in
     # earlier versions of OSX. Tested on High Sierra, where
     # $(uname -r)=='17.4.0'
     with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-osx")" \
-               build_osx "$(uname -r)"
+               build_osx "$GCC_VERSION" "$(uname -r)"
     ;;
-  linux)
+  Linux)
     # Default to 2 parallel jobs if unspecified.
-    readonly MAKE_JOBS="${MAKE_JOBS:-2}"
     with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-linux")" \
-               build_linux
+               build_linux "$GCC_VERSION"
     ;;
   *)
     die "gcc does not support building for '${TARGET_PLATFORM}'"

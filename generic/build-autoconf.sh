@@ -4,7 +4,7 @@
 
 readonly AUTOCONF_VERSION="${1:-2.69}"
 
-exec ./build-configure.sh \
+exec ./build-configure-helper.sh \
  autoconf \
  "$AUTOCONF_VERSION" \
  'ftpmirror.gnu.org/autoconf'

@@ -1,26 +1,28 @@
-#!/bin/sh
-
 source "$(git rev-parse --show-toplevel)/utils.v1.sh"
-
-set_strict_mode
 
 # TODO: how to declare dependencies on curl and tar?
 function fetch_extract_source_release {
   local -r name="$1"
   local -r version="$2"
   local -r release_urls_base="$3"
-  _extracted_dirname="${name}-${version}"
-  _archive_filename="${_extracted_dirname}.tar.gz"
-  _release_url="https://${release_urls_base}/${_archive_filename}"
+  local -r extracted_dirname="${name}-${version}"
+  local -r archive_filename="${extracted_dirname}.tar.gz"
+  local -r release_url="https://${release_urls_base}/${archive_filename}"
 
-  _downloaded_archive="$(curl_file_with_fail "$_release_url" "$_archive_filename")"
-  extract_for "$_downloaded_archive" "$_extracted_dirname"
+  local -r downloaded_archive="$(curl_file_with_fail "$release_url" "$archive_filename")"
+  extract_for "$downloaded_archive" "$extracted_dirname"
 }
 
-function build_with_configure {
-  ./configure "$@"
+function make_and_install {
   make "-j${MAKE_JOBS:-2}"
   make install
+}
+
+export CONFIGURE_PATH="${CONFIGURE_PATH:-./configure}"
+
+function build_with_configure {
+  "$CONFIGURE_PATH" "$@"
+  make_and_install
 }
 
 function build {
@@ -45,16 +47,3 @@ function build {
   with_pushd "$install_dir" \
              create_gz_package "$name" "${output_paths[@]}"
 }
-
-## Interpret arguments and execute build.
-
-if [[ "$#" -lt 3 ]]; then
-  die "Usage: $0 NAME VERSION RELEASE_URLS_BASE [OUTPUT_PATHS...]"
-fi
-
-readonly NAME="$1"
-readonly VERSION="$2"
-readonly RELEASE_URLS_BASE="$3"
-readonly -a CONFIGURE_ARGS=( "${@:4}" )
-
-build "$NAME" "$VERSION" "$RELEASE_URLS_BASE" "${CONFIGURE_ARGS[@]}"

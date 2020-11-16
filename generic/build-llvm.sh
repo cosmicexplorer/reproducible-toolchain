@@ -14,7 +14,7 @@ function fetch_llvm_binary_release_archive {
   curl_file_with_fail "$release_url" "$archive_filename"
 }
 
-readonly TARGET_PLATFORM="$1" LLVM_VERSION="$2"
+readonly LLVM_VERSION="$1" TARGET_PLATFORM="$2"
 
 case "$TARGET_PLATFORM" in
   osx)
