@@ -14,9 +14,9 @@ function fetch_llvm_binary_release_archive {
   curl_file_with_fail "$release_url" "$archive_filename"
 }
 
-readonly LLVM_VERSION="$1" TARGET_PLATFORM="$2"
+readonly LLVM_VERSION="$1" TARGET_OS="$2"
 
-case "$TARGET_PLATFORM" in
+case "$TARGET_OS" in
   osx)
     with_pushd "$(mkdirp_absolute_path "llvm-${LLVM_VERSION}-osx")" \
                fetch_llvm_binary_release_archive 'apple-darwin'
@@ -26,6 +26,6 @@ case "$TARGET_PLATFORM" in
                fetch_llvm_binary_release_archive 'linux-gnu-ubuntu-16.04'
     ;;
   *)
-    die "llvm does not support building for '${TARGET_PLATFORM}'"
+    die "llvm does not support building for OS '${TARGET_OS}' (from 'uname')!"
     ;;
 esac

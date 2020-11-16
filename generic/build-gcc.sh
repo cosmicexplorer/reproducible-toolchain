@@ -73,36 +73,30 @@ function build_linux {
 
 ## Interpret arguments and execute build.
 
-readonly GCC_VERSION="${1:-10.2.0}" TARGET_PLATFORM="${2:-$(uname)}"
+# TODO: (on  OSX): I haven't been  able to get  this to build  without appending $(uname -r)  to the
+# --host and --target  specs -- this is  again what is done in  homebrew. I don't know  if this will
+# cause subtle or non-subtle incompatibilities with earlier versions of OSX.
+# Tested on High Sierra, where $(uname -r)=='17.4.0'
 
-case "$TARGET_PLATFORM" in
+readonly GCC_VERSION="${1:-10.2.0}" TARGET_OS="${2:-$(uname)}" TARGET_ARCH="${3:-$(uname -r)}"
+
+case "$TARGET_OS" in
   Darwin)
-    if [[ "$(uname)" != 'Darwin' ]]; then
-      die "This script only supports building gcc for OSX within an OSX environment."
-    fi
-    # Since we can't do this in a VM, ensure we're (probably) using the tools
-    # provided by Apple -- accidentally using e.g. homebrew tools instead will
-    # cause weird errors.
-    export PATH="/bin:/usr/bin:${PATH}"
     # There are race conditions with parallel make, or at least, I have found
     # weird errors occur whenever I try to use make with parallelism. This might
     # be worth investigating at some point. This may be related to this comment
     # on the homebrew formula for gcc 7.3.0: https://github.com/Homebrew/homebrew-core/blob/a58c7b32c9ab679bc5f1afecc45f315710676ba1/Formula/gcc.rb#L56
     readonly MAKE_JOBS=1
-    # I haven't been able to get this to build without appending $(uname -r) to
-    # the --host and --target specs -- this is again what is done in homebrew. I
-    # don't know if this will cause subtle or non-subtle incompatibilities with
-    # earlier versions of OSX. Tested on High Sierra, where
-    # $(uname -r)=='17.4.0'
     with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-osx")" \
-               build_osx "$GCC_VERSION" "$(uname -r)"
+               build_osx "$GCC_VERSION" "$TARGET_ARCH"
     ;;
   Linux)
-    # Default to 2 parallel jobs if unspecified.
+    # TODO: use $TARGET_ARCH in this branch somehow (to tag things?)?
+    # Default to 2 parallel make jobs if unspecified.
     with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-linux")" \
                build_linux "$GCC_VERSION"
     ;;
   *)
-    die "gcc does not support building for '${TARGET_PLATFORM}'"
+    die "gcc does not support building for OS '${TARGET_OS}' (as per 'uname')!"
     ;;
 esac

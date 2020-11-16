@@ -50,9 +50,9 @@ function build_linux {
 
 ## Interpret arguments and execute build.
 
-readonly TARGET_PLATFORM="$1" CMAKE_VERSION="$2"
+readonly TARGET_OS="$1" CMAKE_VERSION="$2"
 
-case "$TARGET_PLATFORM" in
+case "$TARGET_OS" in
   osx)
     with_pushd "$(mkdirp_absolute_path "cmake-${CMAKE_VERSION}-osx")" \
                build_osx
@@ -62,6 +62,6 @@ case "$TARGET_PLATFORM" in
                build_linux
     ;;
   *)
-    die "cmake does not support building for '${TARGET_PLATFORM}'"
+    die "cmake does not support building for OS '${TARGET_OS}' (from 'uname')!"
     ;;
 esac
