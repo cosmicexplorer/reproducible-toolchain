@@ -2,7 +2,7 @@
 
 ## Interpret arguments and execute build.
 
-readonly BINUTILS_VERSION="$1"
+readonly BINUTILS_VERSION="${1:-2.30}"
 
 exec ./build-configure.sh \
      binutils \
