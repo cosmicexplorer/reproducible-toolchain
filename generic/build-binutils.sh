@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly BINUTILS_VERSION="${1:-2.30}"
+export LATEST_VERSION='2.30'
 
 exec ./build-configure-helper.sh \
      binutils \
-     "$BINUTILS_VERSION" \
+     "${1:-latest}" \
      'ftpmirror.gnu.org/binutils'

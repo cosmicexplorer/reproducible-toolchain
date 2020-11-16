@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly GETTEXT_VERSION="${1:-0.21}"
+export LATEST_VERSION='0.21'
 
 exec ./build-configure-helper.sh \
      gettext \
-     "$GETTEXT_VERSION" \
+     "${1:-latest}" \
      'ftpmirror.gnu.org/gettext'

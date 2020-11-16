@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly TAR_VERSION="${1:-1.32}"
+export LATEST_VERSION='1.32'
 
 exec ./build-configure-helper.sh \
  tar \
- "$TAR_VERSION" \
+ "${1:-latest}" \
  'ftpmirror.gnu.org/tar'

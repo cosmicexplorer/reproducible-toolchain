@@ -27,12 +27,17 @@ function build_with_configure {
 
 function build {
   local -r name="$1"
-  local -r version="$2"
+  local version="$2"
   local -r release_urls_base="$3"
   local -ra configure_args=( "${@:4}" )
 
-  local -r shard="$(mkdirp_absolute_path "${1}-${2}-configure-result")"
-  local -r source_dir="$(with_pushd "$shard" \
+  if [[ "$version" == 'latest' ]]; then
+    version="$LATEST_VERSION"
+  fi
+
+  local -r shard="${name}-${version}"
+  local -r shard_dir="$(mkdirp_absolute_path "${shard}-configure-result")"
+  local -r source_dir="$(with_pushd "$shard_dir" \
     fetch_extract_source_release "$name" "$version" "$release_urls_base")"
 
   local -r install_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "../${name}-install")"

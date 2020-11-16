@@ -44,7 +44,7 @@ function get_existing_absolute_path {
   local -r path_arg="$1"
   # -f is an "illegal option" for OSX readlink, so this may have e.g. `/../`
   # within it.
-  local -r abs_path="$(pwd)/${path_arg}"
+  local -r abs_path="$(readlink -f "$path_arg")"
 
   if ! [[ -f "$abs_path" || -d "$abs_path" ]]; then
     die "File at path '${path_arg}' (relative to pwd '$(pwd)') was expected to exist, but does not."
@@ -53,13 +53,46 @@ function get_existing_absolute_path {
   echo "$abs_path"
 }
 
+function _checksum {
+  sha256sum "$@" | awk '{print $1}'
+}
+
+function _count_bytes {
+  wc -c "$@" | awk '{print $1}'
+}
+
+declare BOOTSTRAP_CURL_OUTPUT_DIR="${BOOTSTRAP_CURL_OUTPUT_DIR:-bootstrap-curl-output}"
+
+function _curl_and_check {
+  local -r url="$1" expected_outfile="$2"
+  local -ra curl_args=( "${@:3}" )
+
+  local -r checksum_file="${expected_outfile}.digest"
+  local -r size_file="${expected_outfile}.size_bytes"
+  if [[ -f "$expected_outfile" && -f "$checksum_file" && -f "$size_file" ]]; then
+    local checksum="$(_checksum "$expected_outfile")"
+    local size="$(_count_bytes "$expected_outfile")"
+    if [[ "$checksum" == "$(cat "$checksum_file")" && "$size" == "$(cat "$size_file")" ]]; then
+      get_existing_absolute_path "$expected_outfile"
+      return "$?"
+    fi
+  fi
+
+  curl >&2 -L --fail -O "$url" "${curl_args[@]}"
+  local checksum="$(_checksum "$expected_outfile")"
+  local size="$(_count_bytes "$expected_outfile")"
+  echo -n "$checksum" > "$checksum_file"
+  echo -n "$size" > "$size_file"
+
+  get_existing_absolute_path "$expected_outfile"
+}
+
 # Download a file from a given URL, with verbose output, and exiting with
 # failure on server errors. --fail should probably be on by default, so probably
 # keep that if you add any other curl wrappers.
 function curl_file_with_fail {
-  local -r url="$1" expected_outfile="$2"
-  curl >&2 -L --fail -O "$url"
-  get_existing_absolute_path "$expected_outfile"
+  with_pushd "$(mkdirp_absolute_path "$BOOTSTRAP_CURL_OUTPUT_DIR")" \
+             _curl_and_check "$@"
 }
 
 # Make a new directory (that may already exist) and echo the absolute path.
@@ -91,22 +124,38 @@ function do_extract {
   esac
 }
 
-function extract_for {
-  local -r archive_path="$1"
-  local -a result_path_candidates=("${@:2}")
+function _check_path {
+  local -r result_path="$1"
+  if [[ -e "$result_path" ]]; then
+    get_existing_absolute_path "$result_path"
+  else
+    warn "Note: candidate '${result_path}' was not found!"
+    return 1
+  fi
+}
 
-  do_extract "$archive_path"
+export BOOTSTRAP_INTERMEDIATE_DIR="${BOOTSTRAP_INTERMEDIATE_DIR:-bootstrap-intermediates}"
+
+function _extract_and_check_paths {
+  local -r archive_path="$1"
+  local -ra result_path_candidates=( "${@:2}" )
+
+  do_extract "$archive_path" >&2
 
   for result_path in "${result_path_candidates[@]}"; do
-    if [[ -e "$result_path" ]]; then
-      get_existing_absolute_path "$result_path"
-      return 0
-    else
-      warn "note: candidate '${result_path}' was not found"
-    fi
+    _check_path "$result_path"
   done
+}
 
-  die "Could not locate the result of extracting '${archive_path}'."
+function extract_for {
+  local -r archive_path="$(get_existing_absolute_path "$1")"
+  local -ra result_path_candidates=( "${@:2}" )
+
+  local -r intermediate_dir="$(mkdirp_absolute_path "$BOOTSTRAP_INTERMEDIATE_DIR")"
+
+  with_pushd "$intermediate_dir" \
+             _extract_and_check_paths "$archive_path" "${result_path_candidates[@]}"
+
 }
 
 function create_gz_package {
@@ -115,12 +164,12 @@ function create_gz_package {
 
   local -r pkg_archive_name="${pkg_name}.tar.gz"
 
-  rm -f "$pkg_archive_name"
+  rm >&2 -fv "$pkg_archive_name"
 
   if [[ "${#from_paths[@]}" -eq 0 ]]; then
-    tar -czf "$pkg_archive_name" *
+    tar >&2 cvzf "$pkg_archive_name" *
   else
-    tar -czf "$pkg_archive_name" "${from_paths[@]}"
+    tar >&2 cvzf "$pkg_archive_name" "${from_paths[@]}"
   fi
 
   get_existing_absolute_path "$pkg_archive_name"

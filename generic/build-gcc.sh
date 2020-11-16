@@ -71,14 +71,22 @@ function build_linux {
     "${CONFIGURE_BASE_ARGS[@]}"
 }
 
+readonly LATEST_VERSION='10.2.0'
 ## Interpret arguments and execute build.
 
+readonly _GCC_VERSION_ARG="${1:-latest}"
+readonly TARGET_OS="${2:-$(uname)}"
 # TODO: (on  OSX): I haven't been  able to get  this to build  without appending $(uname -r)  to the
 # --host and --target  specs -- this is  again what is done in  homebrew. I don't know  if this will
 # cause subtle or non-subtle incompatibilities with earlier versions of OSX.
 # Tested on High Sierra, where $(uname -r)=='17.4.0'
+readonly TARGET_ARCH="${3:-$(uname -r)}"
 
-readonly GCC_VERSION="${1:-10.2.0}" TARGET_OS="${2:-$(uname)}" TARGET_ARCH="${3:-$(uname -r)}"
+if [[ "$_GCC_VERSION_ARG" == 'latest' ]]; then
+  readonly GCC_VERSION="$LATEST_VERSION"
+else
+  readonly GCC_VERSION="$_GCC_VERSION_ARG"
+fi
 
 case "$TARGET_OS" in
   Darwin)

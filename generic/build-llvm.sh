@@ -1,34 +1,60 @@
 #!/bin/sh
 
-source "$(git rev-parse --show-toplevel)/utils.v1.sh"
+# TODO: how to declare a (build time!! because it occurs when creating bootstrap artifacts!!)
+# dependency on git?
+readonly BUILDROOT="$(git rev-parse --show-toplevel)"
+
+source "${BUILDROOT}/utils.v1.sh"
 
 set_strict_mode
 
-# TODO: how to declare a (runtime!! because it ***stays xz-compressed!***) dependency on xz?
-function fetch_llvm_binary_release_archive {
-  local -r system_id="$1"
+source "${BUILDROOT}/generic/lib-binary.sh"
 
-  local -r archive_dirname="clang+llvm-${LLVM_VERSION}-x86_64-${system_id}"
-  local -r archive_filename="${archive_dirname}.tar.xz"
-  local -r release_url="https://releases.llvm.org/${LLVM_VERSION}/${archive_filename}"
+function fetch_llvm_binary_release_archive {
+  local -r version="$1"
+  local -r shard="$2"
+
+  local -r archive_filename="${shard}.tar.xz"
+  local -r release_url="https://github.com/llvm/llvm-project/releases/download/llvmorg-${version}/${archive_filename}"
 
   curl_file_with_fail "$release_url" "$archive_filename"
 }
 
+# TODO: how to declare a (build time!!) dependency on xz?
+function fetch_repackage_llvm_xz_into_gz {
+  local -r version="$1"
+  local -r system_id="$2"
+
+  # https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-alinux-gnu-ubuntu-16.04.tar.xz
+  local -r archive_base="clang+llvm-${version}-x86_64-${system_id}"
+  local -r work_dir="${archive_base}-work-dir"
+  local -r xz_result="$(fetch_llvm_binary_release_archive "$version" "$archive_base")"
+
+  repackage_xz "$(dirname "$xz_result")/${archive_base}" "$archive_base"
+}
+
+readonly LATEST_LLVM_VERSION='11.0.0'
 ## Interpret arguments and execute build.
 
-readonly LLVM_VERSION="${1:-11.0.0}" TARGET_OS="${2:-$(uname)}"
+readonly _LLVM_VERSION_ARG="${1:-latest}"
+readonly TARGET_OS="${2:-$(uname)}"
+
+if [[ "$_LLVM_VERSION_ARG" == 'latest' ]]; then
+  readonly LLVM_VERSION="$LATEST_LLVM_VERSION"
+else
+  readonly LLVM_VERSION="$_LLVM_VERSION_ARG"
+fi
 
 case "$TARGET_OS" in
   Darwin)
-    with_pushd "$(mkdirp_absolute_path "llvm-${LLVM_VERSION}-osx")" \
-               fetch_llvm_binary_release_archive 'apple-darwin'
+    readonly download_tag='apple-darwin'
     ;;
   Linux)
-    with_pushd "$(mkdirp_absolute_path "llvm-${LLVM_VERSION}-linux")" \
-               fetch_llvm_binary_release_archive 'linux-gnu-ubuntu-16.04'
+    readonly download_tag='linux-gnu-ubuntu-16.04'
     ;;
   *)
     die "llvm does not support building for OS '${TARGET_OS}' (from 'uname')!"
     ;;
 esac
+
+fetch_repackage_llvm_xz_into_gz "$LLVM_VERSION" "$download_tag"

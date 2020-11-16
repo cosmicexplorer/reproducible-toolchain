@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly MAKE_VERSION="${1:-4.3}"
+export LATEST_VERSION='4.3'
 
 exec ./build-configure-helper.sh \
  make \
- "$MAKE_VERSION" \
+ "${1:-latest}" \
  'ftpmirror.gnu.org/make'

@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-export LATEST_VERSION='1.16.2'
+export LATEST_VERSION='8.32'
 
 exec ./build-configure-helper.sh \
-     automake \
+     coreutils \
      "${1:-latest}" \
-     'ftpmirror.gnu.org/automake'
+     'ftpmirror.gnu.org/coreutils'

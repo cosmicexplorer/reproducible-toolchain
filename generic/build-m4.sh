@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly M4_VERSION="${1:-1.4}"
+export LATEST_VERSION='1.4'
 
 exec ./build-configure-helper.sh \
      m4 \
-     "$M4_VERSION" \
+     "${1:-latest}" \
      'ftpmirror.gnu.org/m4'

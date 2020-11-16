@@ -4,7 +4,7 @@ source ./lib-configure.sh
 
 ## Interpret arguments and execute build.
 
-readonly PERL_VERSION="${1:-5.32.0}"
+export LATEST_VERSION='5.32.0'
 
 function build_with_Configure {
   local -r prefix="$1"
@@ -37,5 +37,5 @@ function build_perl {
 
 build_perl \
   perl \
-  "$PERL_VERSION" \
+  "${1:-latest}" \
   'www.cpan.org/src/5.0'

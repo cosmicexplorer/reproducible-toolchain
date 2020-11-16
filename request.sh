@@ -1,19 +1,31 @@
-#!/bin/sh
+#!/bin/bash
 
-# We only assume the barest POSIX environment at this point, hence a /bin/sh shebang.
-# TODO: really? /bin/sh redirects to bash for me on Arch Linux.
-if [[ "$#" -ne 3 ]]; then
-  echo >&2 "Usage: $0 name version arch_subdir"
+set -euxo pipefail
+
+# TODO: what shell requirements do we have now?
+if [[ "$#" -lt 1 ]]; then
+  cat >&2 <<EOF
+Usage: $0 name [version=latest] [target_os=\$(uname)] [arch_subdir=\$(uname -m)]
+EOF
   exit 1
 fi
 
-_name="$1"
-_version="$2"
-_arch_subdir="$3"
+readonly name="$1"
+readonly version="${2:-latest}"
+readonly target_os="${3:-$(uname)}"
+readonly arch_subdir="${4:-$(uname -m)}"
 
-# ./request.sh binutils 2.30 linux/x86_64
-_full_path="./build-support/bin/${_name}/${_arch_subdir}/${_version}"
-cd "$_full_path"
-echo >&2 "_full_path=${_full_path}"
-./build.sh >&2
-echo "$(pwd)/${_name}.tar.gz"
+readonly shard="${name}-${version}-${target_os}-${arch_subdir}"
+
+readonly BOOTSTRAP_OUTPUT_DIR="${BOOTSTRAP_OUTPUT_DIR:-bootstrap-packaged}"
+mkdir -pv "$BOOTSTRAP_OUTPUT_DIR" >&2
+
+readonly output="${BOOTSTRAP_OUTPUT_DIR}/${shard}.tar.gz"
+
+# ./request.sh binutils [2.30] [linux] [x86_64]
+readonly result="$("./generic/build-${name}.sh" \
+  "${version}" \
+  "${target_os}" \
+  "${arch_subdir}")"
+cp >&2 -v "$result" "$output"
+echo "$output"

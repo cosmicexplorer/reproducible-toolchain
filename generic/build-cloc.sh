@@ -17,9 +17,16 @@ function fetch_cloc_script {
   curl_file_with_fail "$release_url" "$script_filename"
 }
 
+readonly LATEST_VERSION='1.88'
 ## Interpret arguments and execute build.
 
-readonly CLOC_VERSION="${1:-1.88}"
+readonly _CLOC_VERSION_ARG="${1:-latest}"
+if [[ "$_CLOC_VERSION_ARG" == 'latest' ]]; then
+  readonly CLOC_VERSION="$LATEST_VERSION"
+else
+  readonly CLOC_VERSION="$_CLOC_VERSION_ARG"
+fi
+
 readonly subdir="cloc-${CLOC_VERSION}-build-result"
 
 with_pushd "$(mkdirp_absolute_path "$subdir")" \

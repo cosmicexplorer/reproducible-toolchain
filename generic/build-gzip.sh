@@ -2,9 +2,9 @@
 
 ## Interpret arguments and execute build.
 
-readonly GZIP_VERSION="${1:-1.10}"
+export LATEST_VERSION='1.10'
 
 exec ./build-configure-helper.sh \
      gzip \
-     "$GZIP_VERSION" \
+     "${1:-latest}" \
      'ftpmirror.gnu.org/gzip'

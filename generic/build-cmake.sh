@@ -13,9 +13,10 @@ function extract_minor_version {
 }
 
 function fetch_extract_cmake_binary_release {
-  local -r extracted_dirname="$1"
+  local -r version="$1"
+  local -r extracted_dirname="$2"
 
-  local -r cmake_minor_version="$(extract_minor_version "$CMAKE_VERSION")"
+  local -r cmake_minor_version="$(extract_minor_version "$version")"
 
   local -r archive_filename="${extracted_dirname}.tar.gz"
   local -r release_url="https://cmake.org/files/v${cmake_minor_version}/${archive_filename}"
@@ -32,34 +33,33 @@ function package_cmake {
 }
 
 function build_osx {
-  local -r cmake_platform_description="cmake-${CMAKE_VERSION}-Darwin-x86_64"
-
-  local -r extracted_dir="$(fetch_extract_cmake_binary_release "$cmake_platform_description")"
+  local -r extracted_dir="$(fetch_extract_cmake_binary_release "$@")"
 
   package_cmake "${extracted_dir}/CMake.app/Contents"
 }
 
 function build_linux {
-  local -r cmake_platform_description="cmake-${CMAKE_VERSION}-Linux-x86_64"
-
-  local -r extracted_dir="$(fetch_extract_cmake_binary_release "$cmake_platform_description")"
+  local -r extracted_dir="$(fetch_extract_cmake_binary_release "$@")"
 
   package_cmake "$extracted_dir"
 }
 
-
+readonly CMAKE_LATEST_VERSION='3.18.4'
 ## Interpret arguments and execute build.
 
-readonly CMAKE_VERSION="${1:-3.18.4}" TARGET_OS="${2:-$(uname)}"
+readonly _CMAKE_VERSION_ARG="${1:-latest}" TARGET_OS="${2:-$(uname)}"
+if [[ "$_CMAKE_VERSION_ARG" == 'latest' ]]; then
+  readonly CMAKE_VERSION="$CMAKE_LATEST_VERSION"
+else
+  readonly CMAKE_VERSION="$_CMAKE_VERSION_ARG"
+fi
 
 case "$TARGET_OS" in
   Darwin)
-    with_pushd "$(mkdirp_absolute_path "cmake-${CMAKE_VERSION}-osx")" \
-               build_osx
+    build_osx "$CMAKE_VERSION" "cmake-${CMAKE_VERSION}-Darwin-x86_64"
     ;;
   Linux)
-    with_pushd "$(mkdirp_absolute_path "cmake-${CMAKE_VERSION}-linux")" \
-               build_linux
+    build_linux "$CMAKE_VERSION" "cmake-${CMAKE_VERSION}-Linux-x86_64"
     ;;
   *)
     die "cmake does not support building for OS '${TARGET_OS}' (from 'uname')!"
