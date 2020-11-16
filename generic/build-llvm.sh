@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
@@ -14,6 +14,8 @@ function fetch_llvm_binary_release_archive {
 
   curl_file_with_fail "$release_url" "$archive_filename"
 }
+
+## Interpret arguments and execute build.
 
 readonly LLVM_VERSION="${1:-11.0.0}" TARGET_OS="${2:-$(uname)}"
 
