@@ -18,9 +18,10 @@ export BOOTSTRAP_REPACKAGE_DIR="${BOOTSTRAP_REPACKAGE_DIR:-bootstrap-repackage}"
 # TODO: how to declare a (build time!!) dependency on xz and tar?
 function repackage_xz {
   local -r archive_base="$1"
-  local -r gz_package_name="$2"
+  local -r xz_package_name="$2"
+  local -r gz_package_name="$3"
 
-  local -r extracted="$(extract_for "${archive_base}.tar.xz" "$archive_base")"
+  local -r extracted="$(extract_for "$xz_package_name" "$archive_base")"
 
   create_gz_package "$gz_package_name" \
                     "${extracted}"

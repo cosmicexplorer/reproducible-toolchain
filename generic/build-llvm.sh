@@ -27,10 +27,11 @@ function fetch_repackage_llvm_xz_into_gz {
 
   # https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-alinux-gnu-ubuntu-16.04.tar.xz
   local -r archive_base="clang+llvm-${version}-x86_64-${system_id}"
-  local -r work_dir="${archive_base}-work-dir"
   local -r xz_result="$(fetch_llvm_binary_release_archive "$version" "$archive_base")"
 
-  repackage_xz "$(dirname "$xz_result")/${archive_base}" "$archive_base"
+  local -r work_dir="$(mkdirp_absolute_path "${archive_base}-work-dir")"
+  with_pushd "$work_dir" \
+             repackage_xz "$archive_base" "$xz_result" "$archive_base"
 }
 
 readonly LATEST_LLVM_VERSION='11.0.0'
