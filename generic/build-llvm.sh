@@ -14,14 +14,14 @@ function fetch_llvm_binary_release_archive {
   curl_file_with_fail "$release_url" "$archive_filename"
 }
 
-readonly LLVM_VERSION="$1" TARGET_OS="$2"
+readonly LLVM_VERSION="${1:-11.0.0}" TARGET_OS="${2:-$(uname)}"
 
 case "$TARGET_OS" in
-  osx)
+  Darwin)
     with_pushd "$(mkdirp_absolute_path "llvm-${LLVM_VERSION}-osx")" \
                fetch_llvm_binary_release_archive 'apple-darwin'
     ;;
-  linux)
+  Linux)
     with_pushd "$(mkdirp_absolute_path "llvm-${LLVM_VERSION}-linux")" \
                fetch_llvm_binary_release_archive 'linux-gnu-ubuntu-16.04'
     ;;

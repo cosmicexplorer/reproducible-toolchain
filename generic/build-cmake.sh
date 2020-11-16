@@ -50,14 +50,14 @@ function build_linux {
 
 ## Interpret arguments and execute build.
 
-readonly TARGET_OS="$1" CMAKE_VERSION="$2"
+readonly CMAKE_VERSION="${1:-3.18.4}" TARGET_OS="${2:-$(uname)}"
 
 case "$TARGET_OS" in
-  osx)
+  Darwin)
     with_pushd "$(mkdirp_absolute_path "cmake-${CMAKE_VERSION}-osx")" \
                build_osx
     ;;
-  linux)
+  Linux)
     with_pushd "$(mkdirp_absolute_path "cmake-${CMAKE_VERSION}-linux")" \
                build_linux
     ;;
