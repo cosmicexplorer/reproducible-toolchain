@@ -4,6 +4,7 @@ source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
 set_strict_mode
 
+# TODO: how to declare a (runtime!! because it ***stays xz-compressed!***) dependency on xz?
 function fetch_llvm_binary_release_archive {
   local -r system_id="$1"
 
