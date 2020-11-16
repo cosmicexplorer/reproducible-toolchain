@@ -4,7 +4,7 @@ source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
 set_strict_mode
 
-source ./lib-configure.sh
+source generic/lib-configure.sh
 
 ## Interpret arguments and execute build.
 

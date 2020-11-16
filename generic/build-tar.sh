@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='1.32'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
  tar \
  "${1:-latest}" \
  'ftpmirror.gnu.org/tar'

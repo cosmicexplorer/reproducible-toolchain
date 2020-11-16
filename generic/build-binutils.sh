@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='2.30'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      binutils \
      "${1:-latest}" \
      'ftpmirror.gnu.org/binutils'

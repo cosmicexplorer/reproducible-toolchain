@@ -4,7 +4,7 @@ source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
 set_strict_mode
 
-source ./lib-configure.sh
+source generic/lib-configure.sh
 
 function build_gcc_out_of_tree {
   local -r name="$1"

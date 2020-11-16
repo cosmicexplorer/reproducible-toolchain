@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='1.4'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      m4 \
      "${1:-latest}" \
      'ftpmirror.gnu.org/m4'

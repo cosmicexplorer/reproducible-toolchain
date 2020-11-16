@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='2.4.6'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
  libtool \
  "${1:-latest}" \
  'ftpmirror.gnu.org/libtool'

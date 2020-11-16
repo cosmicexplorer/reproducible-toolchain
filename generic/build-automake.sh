@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='1.16.2'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      automake \
      "${1:-latest}" \
      'ftpmirror.gnu.org/automake'

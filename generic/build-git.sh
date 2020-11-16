@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='2.29.2'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
  git \
  "${1:-latest}" \
  'mirrors.edge.kernel.org/pub/software/scm/git'

@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='0.21'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      gettext \
      "${1:-latest}" \
      'ftpmirror.gnu.org/gettext'

@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='5.0'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      bash \
      "${1:-latest}" \
      'ftpmirror.gnu.org/bash'

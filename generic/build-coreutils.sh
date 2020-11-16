@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='8.32'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
      coreutils \
      "${1:-latest}" \
      'ftpmirror.gnu.org/coreutils'

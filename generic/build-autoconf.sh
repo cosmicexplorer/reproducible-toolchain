@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='2.69'
 
-exec ./build-configure-helper.sh \
+exec generic/build-configure-helper.sh \
  autoconf \
  "${1:-latest}" \
  'ftpmirror.gnu.org/autoconf'

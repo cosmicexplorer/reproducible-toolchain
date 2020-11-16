@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ./lib-configure.sh
+source generic/lib-configure.sh
 
 ## Interpret arguments and execute build.
 
