@@ -7,4 +7,4 @@ readonly MAKE_VERSION="${1:-4.3}"
 exec ./build-configure.sh \
  make \
  "$MAKE_VERSION" \
- 'ftp.gnu.org/gnu/make/'
+ 'ftpmirror.gnu.org/make'

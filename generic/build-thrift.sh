@@ -7,7 +7,7 @@ set_strict_mode
 function build_bison {
   local -r extracted_dirname="bison-${BISON_VERSION}"
   local -r archive_filename="${extracted_dirname}.tar.gz"
-  local -r release_url="http://ftp.gnu.org/gnu/bison/${archive_filename}"
+  local -r release_url="http://ftpmirror.gnu.org/bison/${archive_filename}"
 
   local -r downloaded_archive="$(curl_file_with_fail "$release_url" "$archive_filename")"
   local -r source_extracted_abs="$(extract_for "$downloaded_archive" "$extracted_dirname")"
