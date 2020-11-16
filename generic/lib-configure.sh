@@ -1,12 +1,14 @@
 source "$(git rev-parse --show-toplevel)/utils.v1.sh"
 
+readonly ARCHIVE_URL_EXTENSION="${ARCHIVE_URL_EXTENSION:-.tar.gz}"
+
 # TODO: how to declare dependencies on curl and tar?
 function fetch_extract_source_release {
   local -r name="$1"
   local -r version="$2"
   local -r release_urls_base="$3"
   local -r extracted_dirname="${name}-${version}"
-  local -r archive_filename="${extracted_dirname}.tar.gz"
+  local -r archive_filename="${extracted_dirname}${ARCHIVE_URL_EXTENSION}"
   local -r release_url="https://${release_urls_base}/${archive_filename}"
 
   local -r downloaded_archive="$(curl_file_with_fail "$release_url" "$archive_filename")"
