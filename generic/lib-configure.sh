@@ -46,6 +46,19 @@ function build {
 
   local -r install_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "../${name}-install")"
 
+  if [[ -z "${WITHIN_AUTOCONF:-}" ]]; then
+    PATH="$(declare_bin_dependency 'autoconf'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_AUTOMAKE:-}" ]]; then
+    PATH="$(declare_bin_dependency 'automake'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_M4:-}" ]]; then
+    PATH="$(declare_bin_dependency 'm4'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_GETTEXT:-}" ]]; then
+    PATH="$(declare_bin_dependency 'gettext'):${PATH}"
+  fi
+
   if [[ "${#configure_args[@]:-}" -eq 0 ]]; then
     with_pushd >&2 "$source_dir" \
                    build_with_configure --prefix="$install_dir"
