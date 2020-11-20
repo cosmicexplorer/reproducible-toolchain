@@ -1,4 +1,6 @@
-source "$(git rev-parse --show-toplevel)/utils.v1.sh"
+# -*- mode: sh; sh-shell: bash -*-
+
+source ./utils.v1.sh
 
 readonly ARCHIVE_URL_EXTENSION="${ARCHIVE_URL_EXTENSION:-.tar.gz}"
 
@@ -44,15 +46,25 @@ function build {
 
   local -r install_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "../${name}-install")"
 
-  with_pushd >&2 "$source_dir" \
-                 build_with_configure --prefix "$install_dir" "${configure_args[@]}"
+  if [[ "${#configure_args[@]:-}" -eq 0 ]]; then
+    with_pushd >&2 "$source_dir" \
+                   build_with_configure --prefix="$install_dir"
+  else
+    with_pushd >&2 "$source_dir" \
+                   build_with_configure --prefix="$install_dir" "${configure_args[@]}"
+  fi
 
   # NB: The below two lines are debugging info.
   echo >&2 "$source_dir" "$install_dir"
   ls -lAvF >&2 "$install_dir"
-  # TODO: checking if this is an empty array is Very Hard.
-  # if [[ "${#configure_args[@]}" -eq 0 || "${configure_args[1]:-}" == '' ]]; then
   local -ra output_paths=( $(with_pushd "$install_dir" find . -executable -type f) )
-  with_pushd "$install_dir" \
-             create_gz_package "$name" "${output_paths[@]}"
+
+  # TODO: checking if this is an empty array is Very Hard.
+  if [[ "${#output_paths[@]:-}" -eq 0 ]]; then
+    with_pushd "$install_dir" \
+               create_gz_package "$name"
+  else
+    with_pushd "$install_dir" \
+               create_gz_package "$name" "${output_paths[@]}"
+  fi
 }

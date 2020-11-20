@@ -1,6 +1,6 @@
 # TODO: how to declare a (build time!! because it occurs when creating bootstrap artifacts!!)
 # dependency on git?
-source "$(git rev-parse --show-toplevel)/utils.v1.sh"
+source ./utils.v1.sh
 
 set_strict_mode
 

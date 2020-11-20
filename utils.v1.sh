@@ -1,3 +1,5 @@
+# -*- mode: sh; sh-shell: bash -*-
+
 # Not an executable. Can be sourced by other scripts in this repo for some free
 # error checking for common operations. Uses bash-specific features including
 # `local`.
@@ -78,7 +80,7 @@ function _curl_and_check {
     fi
   fi
 
-  curl >&2 -L --fail -O "$url" "${curl_args[@]}"
+  curl >&2 -L --fail -O "$url" "${curl_args[@]:-}"
   local checksum="$(_checksum "$expected_outfile")"
   local size="$(_count_bytes "$expected_outfile")"
   echo -n "$checksum" > "$checksum_file"
@@ -184,6 +186,11 @@ function with_pushd {
   popd >&2
 }
 
-# function declare_dependency {
-#   local -r
-# }
+function declare_bin_dependency {
+  local -ra request_args=( "$@" )
+
+  local -r packed_archive="$(./request.sh "${request_args[@]}")"
+
+  # Return the 'bin' directory of the unpacked archive.
+  extract_for "$packed_archive" 'bin'
+}

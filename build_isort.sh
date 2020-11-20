@@ -25,4 +25,3 @@ run_pex -v \
   -o "${target}"
 
 "${target}" --version
-

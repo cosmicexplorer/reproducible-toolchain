@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(git rev-parse --show-toplevel)/utils.v1.sh"
+source ./utils.v1.sh
 
 set_strict_mode
 
@@ -14,7 +14,6 @@ function build_gcc_out_of_tree {
 
   local -r source_dir="$(fetch_extract_source_release "$name" "$version" "$release_urls_base")"
 
-  check_cmd_or_err 'wget'
   # This script is a great tool, it saves a ton of time downloading and
   # configuring gmp, mpc, isl, and mpfr per-platform.
   # Redirect to stderr because we "return" a path to our .tar.gz by stdout.
@@ -48,20 +47,7 @@ readonly -a CONFIGURE_BASE_ARGS=(
   --with-bugurl='https://github.com/cosmicexplorer/bootstrap/issues'
 )
 
-function build_osx {
-  local -r version="$1"
-  local -r osx_release_numeric="$2"
-  local -r target_desc="x86_64-apple-darwin${osx_release_numeric}"
-  build_gcc_out_of_tree \
-    gcc \
-    "$version" \
-    "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
-    --host="$target_desc" \
-    --target="$target_desc" \
-    "${CONFIGURE_BASE_ARGS[@]}"
-}
-
-function build_linux {
+function build_gcc {
   local -r version="$1"
   # Note: gcc seems to be the only gnu project with this sharded download URL format.
   build_gcc_out_of_tree \
@@ -88,23 +74,5 @@ else
   readonly GCC_VERSION="$_GCC_VERSION_ARG"
 fi
 
-case "$TARGET_OS" in
-  Darwin)
-    # There are race conditions with parallel make, or at least, I have found
-    # weird errors occur whenever I try to use make with parallelism. This might
-    # be worth investigating at some point. This may be related to this comment
-    # on the homebrew formula for gcc 7.3.0: https://github.com/Homebrew/homebrew-core/blob/a58c7b32c9ab679bc5f1afecc45f315710676ba1/Formula/gcc.rb#L56
-    readonly MAKE_JOBS=1
-    with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-osx")" \
-               build_osx "$GCC_VERSION" "$TARGET_ARCH"
-    ;;
-  Linux)
-    # TODO: use $TARGET_ARCH in this branch somehow (to tag things?)?
-    # Default to 2 parallel make jobs if unspecified.
-    with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-linux")" \
-               build_linux "$GCC_VERSION"
-    ;;
-  *)
-    die "gcc does not support building for OS '${TARGET_OS}' (as per 'uname')!"
-    ;;
-esac
+with_pushd "$(mkdirp_absolute_path "gcc-${GCC_VERSION}-${TARGET_OS}")" \
+           build_gcc "$GCC_VERSION"
