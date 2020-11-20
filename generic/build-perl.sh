@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source generic/lib-configure.sh
+source "$TOOLCHAIN_ROOT"/generic/lib-configure.sh
 
 ## Interpret arguments and execute build.
 

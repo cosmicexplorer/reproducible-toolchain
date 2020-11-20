@@ -55,12 +55,18 @@ function get_existing_absolute_path {
   echo "$abs_path"
 }
 
+function _bootstrap_gawk {
+  local -r gawk_bin="$(declare_bin_dependency gawk)"
+  PATH="${gawk_bin}:$PATH" \
+      gawk "$@"
+}
+
 function _checksum {
-  sha256sum "$@" | awk '{print $1}'
+  sha256sum "$@" | _bootstrap_gawk '{print $1}'
 }
 
 function _count_bytes {
-  wc -c "$@" | awk '{print $1}'
+  wc -c "$@" | _bootstrap_gawk '{print $1}'
 }
 
 declare BOOTSTRAP_CURL_OUTPUT_DIR="${BOOTSTRAP_CURL_OUTPUT_DIR:-bootstrap-curl-output}"
@@ -80,7 +86,13 @@ function _curl_and_check {
     fi
   fi
 
-  curl >&2 -L --fail -O "$url" "${curl_args[@]:-}"
+  if [[ "${#curl_args[@]:-}" -eq 0 ]]; then
+    curl >&2 -L --fail -O "$url"
+  else
+    curl >&2 -L --fail -O "$url" "${curl_args[@]}"
+  fi
+
+
   local checksum="$(_checksum "$expected_outfile")"
   local size="$(_count_bytes "$expected_outfile")"
   echo -n "$checksum" > "$checksum_file"
@@ -189,7 +201,7 @@ function with_pushd {
 function declare_bin_dependency {
   local -ra request_args=( "$@" )
 
-  local -r packed_archive="$(./request.sh "${request_args[@]}")"
+  local -r packed_archive="$(with_pushd "$TOOLCHAIN_ROOT" ./request.sh "${request_args[@]}")"
 
   # Return the 'bin' directory of the unpacked archive.
   extract_for "$packed_archive" 'bin'

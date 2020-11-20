@@ -1,6 +1,6 @@
 # -*- mode: sh; sh-shell: bash -*-
 
-source ./utils.v1.sh
+source "$TOOLCHAIN_ROOT"/utils.v1.sh
 
 readonly ARCHIVE_URL_EXTENSION="${ARCHIVE_URL_EXTENSION:-.tar.gz}"
 

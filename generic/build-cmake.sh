@@ -1,10 +1,10 @@
 #!/bin/bash
 
-source ./utils.v1.sh
+source "$TOOLCHAIN_ROOT"/utils.v1.sh
 
 set_strict_mode
 
-source generic/lib-configure.sh
+source "$TOOLCHAIN_ROOT"/generic/lib-configure.sh
 
 function build_cmake {
   local -r version="$1"

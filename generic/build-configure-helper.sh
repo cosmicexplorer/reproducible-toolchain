@@ -1,10 +1,10 @@
 #!/bin/sh
 
-source ./utils.v1.sh
+source "$TOOLCHAIN_ROOT"/utils.v1.sh
 
 set_strict_mode
 
-source generic/lib-configure.sh
+source "$TOOLCHAIN_ROOT"/generic/lib-configure.sh
 
 ## Interpret arguments and execute build.
 
@@ -17,4 +17,8 @@ readonly VERSION="$2"
 readonly RELEASE_URLS_BASE="$3"
 readonly -a CONFIGURE_ARGS=( "${@:4}" )
 
-build "$NAME" "$VERSION" "$RELEASE_URLS_BASE" "${CONFIGURE_ARGS[@]}"
+if [[ "${#CONFIGURE_ARGS[@]:-}" -eq 0 ]]; then
+  build "$NAME" "$VERSION" "$RELEASE_URLS_BASE"
+else
+  build "$NAME" "$VERSION" "$RELEASE_URLS_BASE" "${CONFIGURE_ARGS[@]}"
+fi

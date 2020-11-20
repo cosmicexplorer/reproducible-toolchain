@@ -1,10 +1,10 @@
 #!/bin/bash
 
-source ./utils.v1.sh
+source "$TOOLCHAIN_ROOT"/utils.v1.sh
 
 set_strict_mode
 
-source generic/lib-configure.sh
+source "$TOOLCHAIN_ROOT"/generic/lib-configure.sh
 
 function build_gcc_out_of_tree {
   local -r name="$1"

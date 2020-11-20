@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source ./utils.v1.sh
+export TOOLCHAIN_ROOT="$(pwd)"
+
+source "$TOOLCHAIN_ROOT"/utils.v1.sh
 
 set_strict_mode
 
@@ -20,7 +22,7 @@ readonly arch_subdir="${4:-$(uname -m)}"
 
 readonly shard="${name}-${version}-${target_os}-${arch_subdir}"
 
-readonly BOOTSTRAP_OUTPUT_DIR="${BOOTSTRAP_OUTPUT_DIR:-bootstrap-packaged}"
+readonly BOOTSTRAP_OUTPUT_DIR="${BOOTSTRAP_OUTPUT_DIR:-"$TOOLCHAIN_ROOT"/bootstrap-packaged}"
 mkdir -pv "$BOOTSTRAP_OUTPUT_DIR" >&2
 
 readonly output="${BOOTSTRAP_OUTPUT_DIR}/${shard}.tar.gz"
