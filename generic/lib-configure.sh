@@ -43,6 +43,10 @@ function build_with_configure {
   if [[ -z "${WITHIN_BINUTILS:-}" ]]; then
     PATH="$(declare_bin_dependency 'binutils'):${PATH}"
   fi
+  export LD="$(which ld)"
+  export AR="$(which ar)"
+  export NM="$(which nm)"
+  export RANLIB="$(which ranlib)"
 
   "$CONFIGURE_PATH" "$@"
   make_and_install
