@@ -25,6 +25,25 @@ function make_and_install {
 export CONFIGURE_PATH="${CONFIGURE_PATH:-./configure}"
 
 function build_with_configure {
+  if [[ -z "${WITHIN_AUTOCONF:-}" ]]; then
+    PATH="$(declare_bin_dependency 'autoconf'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_AUTOMAKE:-}" ]]; then
+    PATH="$(declare_bin_dependency 'automake'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_M4:-}" ]]; then
+    PATH="$(declare_bin_dependency 'm4'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_GETTEXT:-}" ]]; then
+    PATH="$(declare_bin_dependency 'gettext'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_GAWK:-}" ]]; then
+    PATH="$(declare_bin_dependency 'gawk'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_BINUTILS:-}" ]]; then
+    PATH="$(declare_bin_dependency 'binutils'):${PATH}"
+  fi
+
   "$CONFIGURE_PATH" "$@"
   make_and_install
 }
@@ -45,19 +64,6 @@ function build {
     fetch_extract_source_release "$name" "$version" "$release_urls_base")"
 
   local -r install_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "../${name}-install")"
-
-  if [[ -z "${WITHIN_AUTOCONF:-}" ]]; then
-    PATH="$(declare_bin_dependency 'autoconf'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_AUTOMAKE:-}" ]]; then
-    PATH="$(declare_bin_dependency 'automake'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_M4:-}" ]]; then
-    PATH="$(declare_bin_dependency 'm4'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_GETTEXT:-}" ]]; then
-    PATH="$(declare_bin_dependency 'gettext'):${PATH}"
-  fi
 
   if [[ "${#configure_args[@]:-}" -eq 0 ]]; then
     with_pushd >&2 "$source_dir" \

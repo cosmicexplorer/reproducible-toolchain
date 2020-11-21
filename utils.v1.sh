@@ -95,8 +95,8 @@ function _curl_and_check {
 
   local checksum="$(_checksum "$expected_outfile")"
   local size="$(_count_bytes "$expected_outfile")"
-  echo -n "$checksum" > "$checksum_file"
-  echo -n "$size" > "$size_file"
+  echo "$checksum" > "$checksum_file"
+  echo "$size" > "$size_file"
 
   get_existing_absolute_path "$expected_outfile"
 }
@@ -123,7 +123,9 @@ function do_extract {
 
   case "$archive_path" in
     *.tar.xz)
-      check_cmd_or_err 'xz'
+      if [[ -z "${WITHIN_XZ:-}" ]]; then
+        PATH="$(declare_bin_dependency 'xz'):${PATH}"
+      fi
       tar xf "$archive_path"
       ;;
     *.tar.gz)
@@ -148,7 +150,7 @@ function _check_path {
   fi
 }
 
-export BOOTSTRAP_INTERMEDIATE_DIR="${BOOTSTRAP_INTERMEDIATE_DIR:-bootstrap-intermediates}"
+export BOOTSTRAP_INTERMEDIATE_DIR="${BOOTSTRAP_INTERMEDIATE_DIR:-"$TOOLCHAIN_ROOT"/bootstrap-intermediates}"
 
 function _extract_and_check_paths {
   local -r archive_path="$1"
@@ -169,7 +171,6 @@ function extract_for {
 
   with_pushd "$intermediate_dir" \
              _extract_and_check_paths "$archive_path" "${result_path_candidates[@]}"
-
 }
 
 function create_gz_package {

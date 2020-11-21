@@ -38,7 +38,9 @@ function build_clingo {
   local -r build_dir="$(with_pushd "$source_dir" mkdirp_absolute_path "../clingo-build")"
 
   local -r cmake_bin_dir="$(declare_bin_dependency 'cmake')"
-  PATH="${cmake_bin_dir}:${PATH}" \
+  local -r gcc_bin_dir="$(declare_bin_dependency 'gcc')"
+  local -r make_bin_dir="$(declare_bin_dependency 'make')"
+  PATH="${cmake_bin_dir}:${gcc_bin_dir}:${make_bin_dir}:${PATH}" \
       run_cmake "$source_dir" "$build_dir" \
       >&2
 

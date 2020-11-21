@@ -49,12 +49,22 @@ readonly -a CONFIGURE_BASE_ARGS=(
 
 function build_gcc {
   local -r version="$1"
+  local -ra extra_configure_args=( "${@:2}" )
   # Note: gcc seems to be the only gnu project with this sharded download URL format.
-  build_gcc_out_of_tree \
-    gcc \
-    "$version" \
-    "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
-    "${CONFIGURE_BASE_ARGS[@]}"
+  if [[ "${#extra_configure_args[@]:-}" -eq 0 ]]; then
+    build_gcc_out_of_tree \
+      gcc \
+      "$version" \
+      "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
+      "${CONFIGURE_BASE_ARGS[@]}"
+  else
+    build_gcc_out_of_tree \
+      gcc \
+      "$version" \
+      "ftpmirror.gnu.org/gnu/gcc/gcc-${version}" \
+      "${CONFIGURE_BASE_ARGS[@]}" \
+      "${extra_configure_args[@]}"
+  fi
 }
 
 readonly LATEST_VERSION='10.2.0'

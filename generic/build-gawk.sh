@@ -4,7 +4,7 @@
 
 export LATEST_VERSION='5.1.0'
 
-# 'ftp.gnu.org/gnu/gawk'
+export WITHIN_GAWK='y'
 
 exec generic/build-configure-helper.sh \
      gawk \
