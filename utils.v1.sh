@@ -70,6 +70,7 @@ function _count_bytes {
 }
 
 declare BOOTSTRAP_CURL_OUTPUT_DIR="${BOOTSTRAP_CURL_OUTPUT_DIR:-bootstrap-curl-output}"
+export NO_CURL_CHECKSUM="${NO_CURL_CHECKSUM:-}"
 
 function _curl_and_check {
   local -r url="$1" expected_outfile="$2"
@@ -77,7 +78,7 @@ function _curl_and_check {
 
   local -r checksum_file="${expected_outfile}.digest"
   local -r size_file="${expected_outfile}.size_bytes"
-  if [[ -f "$expected_outfile" && -f "$checksum_file" && -f "$size_file" ]]; then
+  if [[ -z "$NO_CURL_CHECKSUM" && -f "$expected_outfile" && -f "$checksum_file" && -f "$size_file" ]]; then
     local checksum="$(_checksum "$expected_outfile")"
     local size="$(_count_bytes "$expected_outfile")"
     if [[ "$checksum" == "$(cat "$checksum_file")" && "$size" == "$(cat "$size_file")" ]]; then
@@ -93,10 +94,12 @@ function _curl_and_check {
   fi
 
 
-  local checksum="$(_checksum "$expected_outfile")"
-  local size="$(_count_bytes "$expected_outfile")"
-  echo "$checksum" > "$checksum_file"
-  echo "$size" > "$size_file"
+  if [[ -z "$NO_CURL_CHECKSUM" ]]; then
+    local checksum="$(_checksum "$expected_outfile")"
+    local size="$(_count_bytes "$expected_outfile")"
+    echo "$checksum" > "$checksum_file"
+    echo "$size" > "$size_file"
+  fi
 
   get_existing_absolute_path "$expected_outfile"
 }

@@ -14,7 +14,12 @@ function fetch_extract_source_release {
   local -r release_url="https://${release_urls_base}/${archive_filename}"
 
   local -r downloaded_archive="$(curl_file_with_fail "$release_url" "$archive_filename")"
-  extract_for "$downloaded_archive" "$extracted_dirname"
+  local -r extracted_archive="${BOOTSTRAP_INTERMEDIATE_DIR}/${extracted_dirname}"
+  if [[ -d "$extracted_archive" ]]; then
+    echo "$extracted_archive"
+  else
+    extract_for "$downloaded_archive" "$extracted_dirname"
+  fi
 }
 
 function make_and_install {
@@ -24,30 +29,35 @@ function make_and_install {
 
 export CONFIGURE_PATH="${CONFIGURE_PATH:-./configure}"
 
-function build_with_configure {
-  if [[ -z "${WITHIN_AUTOCONF:-}" ]]; then
-    PATH="$(declare_bin_dependency 'autoconf'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_AUTOMAKE:-}" ]]; then
-    PATH="$(declare_bin_dependency 'automake'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_M4:-}" ]]; then
-    PATH="$(declare_bin_dependency 'm4'):${PATH}"
+function setup_configure_bin_paths {
+  if [[ -z "${WITHIN_BINUTILS:-}" ]]; then
+    PATH="$(declare_bin_dependency 'binutils'):${PATH}"
   fi
   if [[ -z "${WITHIN_GETTEXT:-}" ]]; then
     PATH="$(declare_bin_dependency 'gettext'):${PATH}"
   fi
+  if [[ -z "${WITHIN_M4:-}" ]]; then
+    PATH="$(declare_bin_dependency 'm4'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_AUTOMAKE:-}" ]]; then
+    PATH="$(declare_bin_dependency 'automake'):${PATH}"
+  fi
+  if [[ -z "${WITHIN_AUTOCONF:-}" ]]; then
+    PATH="$(declare_bin_dependency 'autoconf'):${PATH}"
+  fi
   if [[ -z "${WITHIN_GAWK:-}" ]]; then
     PATH="$(declare_bin_dependency 'gawk'):${PATH}"
-  fi
-  if [[ -z "${WITHIN_BINUTILS:-}" ]]; then
-    PATH="$(declare_bin_dependency 'binutils'):${PATH}"
   fi
   export LD="$(which ld)"
   export AR="$(which ar)"
   export NM="$(which nm)"
   export RANLIB="$(which ranlib)"
+}
 
+function build_with_configure {
+  if [[ -z "${WITHIN_AUTOCONF:-}" && -z "${WITHIN_AUTOMAKE:-}" && -z "${WITHIN_M4:-}" && -z "${WITHIN_GETTEXT:-}" ]]; then
+    setup_configure_bin_paths
+  fi
   "$CONFIGURE_PATH" "$@"
   make_and_install
 }

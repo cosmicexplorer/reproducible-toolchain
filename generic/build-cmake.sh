@@ -12,9 +12,9 @@ function build_cmake {
 
   # TODO: we  generally assume that  (as in README.rst  in the cmake repo)  we already have  a C++11
   # compiler and 'make' on the PATH.
-  local -r gcc_bin_dir="$(declare_bin_dependency 'gcc')"
-  local -r make_bin_dir="$(declare_bin_dependency 'make')"
-  PATH="${gcc_bin_dir}:${make_bin_dir}:${PATH}"
+  # local -r gcc_bin_dir="$(declare_bin_dependency 'gcc')"
+  # local -r make_bin_dir="$(declare_bin_dependency 'make')"
+  # PATH="${gcc_bin_dir}:${make_bin_dir}:${PATH}"
 
   CONFIGURE_PATH="./bootstrap" \
                 build 'cmake' "$version" "$release_urls_base"
